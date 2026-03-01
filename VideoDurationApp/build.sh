@@ -35,8 +35,9 @@ swiftc \
     -parse-as-library \
     -O
 
-echo "📋 复制 Info.plist..."
+echo "📋 复制 Info.plist 和图标..."
 cp "$SOURCES_DIR/Info.plist" "$APP_DIR/Contents/Info.plist"
+[ -f "$SOURCES_DIR/AppIcon.icns" ] && cp "$SOURCES_DIR/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
 
 # 创建 PkgInfo
 echo -n "APPL????" > "$APP_DIR/Contents/PkgInfo"
