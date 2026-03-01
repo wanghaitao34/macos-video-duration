@@ -1,0 +1,27 @@
+# Build output
+VideoDurationApp/build/
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+xcuserdata/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Temp files
+*.swp
+*.swo
