@@ -2,17 +2,17 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var scanner = VideoScanner()
+    @EnvironmentObject var settings: AppSettings
     @State private var isDragOver = false
     @State private var copiedTotal = false
 
+    private var l10n: L10n { settings.l10n }
+
     var body: some View {
         VStack(spacing: 0) {
-            // 顶部总计信息栏
             summaryBar
-
             Divider()
 
-            // 主内容区
             if scanner.files.isEmpty {
                 dropZone
             } else {
@@ -20,8 +20,6 @@ struct ContentView: View {
             }
 
             Divider()
-
-            // 底部状态栏
             statusBar
         }
         .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
@@ -30,13 +28,12 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - 汇总栏
+    // MARK: - Summary Bar
 
     private var summaryBar: some View {
         HStack(spacing: 24) {
-            // 总时长（主要信息）
             VStack(alignment: .leading, spacing: 2) {
-                Text("总时长")
+                Text(l10n.totalDuration)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 HStack(spacing: 6) {
@@ -56,32 +53,28 @@ struct ContentView: View {
             Spacer()
 
             if !scanner.files.isEmpty {
-                // 文件数量
-                statCard(value: "\(scanner.files.count)", label: "个视频")
-
-                // 总大小
+                statCard(value: "\(scanner.files.count)", label: l10n.videos)
                 statCard(
                     value: ByteCountFormatter.string(fromByteCount: scanner.totalSize, countStyle: .file),
-                    label: "总大小"
+                    label: l10n.totalSize
                 )
 
-                // 操作按钮
                 HStack(spacing: 8) {
                     Button {
                         copyTotal()
                     } label: {
-                        Label(copiedTotal ? "已复制" : "复制时长", systemImage: copiedTotal ? "checkmark" : "doc.on.doc")
+                        Label(copiedTotal ? l10n.copied : l10n.copyDuration, systemImage: copiedTotal ? "checkmark" : "doc.on.doc")
                             .font(.callout)
                     }
                     .buttonStyle(.bordered)
 
-                    Button {
+                    Button(role: .destructive) {
                         scanner.clear()
                     } label: {
-                        Label("清空", systemImage: "trash")
+                        Label(l10n.clear, systemImage: "trash")
                             .font(.callout)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.borderedProminent)
                     .tint(.red)
                 }
             }
@@ -101,11 +94,10 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - 拖放区
+    // MARK: - Drop Zone
 
     private var dropZone: some View {
         ZStack {
-            // 背景
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(
                     isDragOver ? Color.accentColor : Color.secondary.opacity(0.3),
@@ -124,16 +116,16 @@ struct ContentView: View {
                     .animation(.easeInOut(duration: 0.15), value: isDragOver)
 
                 VStack(spacing: 6) {
-                    Text("拖入文件夹或视频文件")
+                    Text(l10n.dropHint)
                         .font(.title3)
                         .fontWeight(.medium)
-                    Text("支持 MP4、MKV、MOV、AVI 等常见格式\n可一次拖入多个文件夹或文件")
+                    Text(l10n.dropSubtitle)
                         .font(.callout)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                 }
 
-                Button("选择文件夹...") {
+                Button(l10n.selectFolder) {
                     openFilePicker()
                 }
                 .buttonStyle(.borderedProminent)
@@ -143,11 +135,11 @@ struct ContentView: View {
         .padding(32)
     }
 
-    // MARK: - 文件列表
+    // MARK: - File List
 
     private var fileList: some View {
         Table(scanner.files) {
-            TableColumn("文件名") { file in
+            TableColumn(l10n.fileName) { file in
                 HStack(spacing: 6) {
                     Image(systemName: "film")
                         .foregroundColor(.accentColor)
@@ -159,20 +151,20 @@ struct ContentView: View {
             }
             .width(min: 200)
 
-            TableColumn("时长") { file in
+            TableColumn(l10n.duration) { file in
                 Text(file.formattedDuration)
                     .font(.system(.body, design: .monospaced))
                     .foregroundColor(.primary)
             }
             .width(min: 80, ideal: 90, max: 110)
 
-            TableColumn("大小") { file in
+            TableColumn(l10n.size) { file in
                 Text(file.formattedSize)
                     .foregroundColor(.secondary)
             }
             .width(min: 70, ideal: 85, max: 110)
 
-            TableColumn("路径") { file in
+            TableColumn(l10n.path) { file in
                 Text(file.url.deletingLastPathComponent().path)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -181,7 +173,7 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - 状态栏
+    // MARK: - Status Bar
 
     private var statusBar: some View {
         HStack {
@@ -195,7 +187,7 @@ struct ContentView: View {
             Spacer()
 
             if !scanner.files.isEmpty {
-                Text("可继续拖入更多文件夹")
+                Text(l10n.dragMoreHint)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -205,7 +197,7 @@ struct ContentView: View {
         .frame(height: 28)
     }
 
-    // MARK: - 辅助
+    // MARK: - Helpers
 
     private func friendlyDuration(_ seconds: TimeInterval) -> String {
         let total = Int(seconds)
@@ -213,30 +205,24 @@ struct ContentView: View {
         let m = (total % 3600) / 60
         let s = total % 60
         if h > 0 {
-            return "（\(h) 小时 \(m) 分 \(s) 秒）"
+            return String(format: l10n.hourMinSec, h, m, s)
         } else if m > 0 {
-            return "（\(m) 分 \(s) 秒）"
+            return String(format: l10n.minSec, m, s)
         } else {
-            return "（\(s) 秒）"
+            return String(format: l10n.secOnly, s)
         }
     }
 
     private func handleDrop(providers: [NSItemProvider]) {
-        var urls: [URL] = []
-        let group = DispatchGroup()
-
-        for provider in providers {
-            group.enter()
-            provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
-                if let data = item as? Data,
+        let providers = providers
+        Task { @MainActor in
+            var urls: [URL] = []
+            for provider in providers {
+                if let data = try? await provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) as? Data,
                    let url = URL(dataRepresentation: data, relativeTo: nil) {
                     urls.append(url)
                 }
-                group.leave()
             }
-        }
-
-        group.notify(queue: .main) {
             if !urls.isEmpty {
                 scanner.scan(urls: urls)
             }
@@ -248,8 +234,8 @@ struct ContentView: View {
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        panel.title = "选择视频文件或文件夹"
-        panel.prompt = "扫描"
+        panel.title = l10n.selectVideoOrFolder
+        panel.prompt = l10n.scan
 
         if panel.runModal() == .OK {
             scanner.scan(urls: panel.urls)

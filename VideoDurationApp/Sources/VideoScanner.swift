@@ -30,7 +30,6 @@ struct VideoFile: Identifiable {
     }
 }
 
-// 支持的视频扩展名
 private let videoExtensions: Set<String> = [
     "mp4", "mkv", "mov", "avi", "wmv", "flv", "webm", "m4v",
     "mpg", "mpeg", "ts", "mts", "m2ts", "3gp", "rm", "rmvb",
@@ -42,7 +41,7 @@ class VideoScanner: ObservableObject {
     @Published var files: [VideoFile] = []
     @Published var isScanning = false
     @Published var progress: Double = 0
-    @Published var statusMessage = "拖入文件夹或视频文件开始扫描"
+    @Published var statusMessage = L10n.current.scanIdleHint
     @Published var errorMessage: String? = nil
 
     var totalDuration: TimeInterval {
@@ -68,16 +67,17 @@ class VideoScanner: ObservableObject {
     func clear() {
         files = []
         progress = 0
-        statusMessage = "拖入文件夹或视频文件开始扫描"
+        statusMessage = L10n.current.scanIdleHint
         errorMessage = nil
     }
 
     private func performScan(urls: [URL]) async {
+        let l10n = L10n.current
+
         await MainActor.run {
-            statusMessage = "正在收集文件..."
+            statusMessage = l10n.scanCollecting
         }
 
-        // 递归收集所有视频文件路径
         var videoURLs: [URL] = []
         for url in urls {
             let collected = collectVideos(at: url)
@@ -86,21 +86,20 @@ class VideoScanner: ObservableObject {
 
         if videoURLs.isEmpty {
             await MainActor.run {
-                statusMessage = "未找到视频文件"
+                statusMessage = l10n.scanNoVideo
                 isScanning = false
             }
             return
         }
 
         await MainActor.run {
-            statusMessage = "正在读取时长... (0/\(videoURLs.count))"
+            statusMessage = String(format: l10n.scanReading, 0, videoURLs.count)
         }
 
         var results: [VideoFile] = []
         let total = videoURLs.count
 
         for (index, url) in videoURLs.enumerated() {
-            // 使用 AVAsset 读取时长（最准确，不需要第三方工具）
             let asset = AVURLAsset(url: url, options: [AVURLAssetPreferPreciseDurationAndTimingKey: false])
 
             do {
@@ -124,24 +123,23 @@ class VideoScanner: ObservableObject {
                     results.append(file)
                 }
             } catch {
-                // 跳过无法读取的文件
+                // skip unreadable files
             }
 
             let currentIndex = index + 1
             await MainActor.run {
                 self.progress = Double(currentIndex) / Double(total)
-                self.statusMessage = "正在读取时长... (\(currentIndex)/\(total))"
+                self.statusMessage = String(format: l10n.scanReading, currentIndex, total)
             }
         }
 
-        // 按文件名排序
         results.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
 
         await MainActor.run {
             self.files = results
             self.isScanning = false
             self.progress = 1.0
-            self.statusMessage = "扫描完成，共 \(results.count) 个视频文件"
+            self.statusMessage = String(format: l10n.scanComplete, results.count)
         }
     }
 
@@ -153,7 +151,6 @@ class VideoScanner: ObservableObject {
         guard fm.fileExists(atPath: url.path, isDirectory: &isDir) else { return results }
 
         if isDir.boolValue {
-            // 递归扫描文件夹
             guard let enumerator = fm.enumerator(
                 at: url,
                 includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey],
