@@ -1,13 +1,13 @@
 #!/bin/bash
 # ============================================
-# 视频总时长 App 构建脚本
+# Viduration App 构建脚本
 # ============================================
 
 set -e
 
-APP_NAME="视频总时长"
-BINARY_NAME="VideoDuration"
-BUNDLE_ID="com.hector.VideoDuration"
+APP_NAME="Viduration"
+BINARY_NAME="Viduration"
+BUNDLE_ID="com.hector.Viduration"
 SOURCES_DIR="$(dirname "$0")/Sources"
 BUILD_DIR="$(dirname "$0")/build"
 APP_DIR="$BUILD_DIR/$APP_NAME.app"
@@ -24,7 +24,9 @@ echo "📦 编译 Swift 源文件..."
 swiftc \
     "$SOURCES_DIR/VideoScanner.swift" \
     "$SOURCES_DIR/ContentView.swift" \
-    "$SOURCES_DIR/VideoDurationApp.swift" \
+    "$SOURCES_DIR/VidurationApp.swift" \
+    "$SOURCES_DIR/AppSettings.swift" \
+    "$SOURCES_DIR/L10n.swift" \
     -o "$APP_DIR/Contents/MacOS/$BINARY_NAME" \
     -sdk "$(xcrun --show-sdk-path)" \
     -target "arm64-apple-macosx13.0" \

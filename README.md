@@ -1,4 +1,4 @@
-# 视频总时长 / Video Total Duration
+# Viduration
 
 [English](#english) | [中文](#中文)
 
@@ -43,7 +43,7 @@
 ```bash
 cd VideoDurationApp
 xcodegen generate
-open VideoDuration.xcodeproj
+open Viduration.xcodeproj
 ```
 
 ### 项目结构
@@ -51,7 +51,7 @@ open VideoDuration.xcodeproj
 ```
 VideoDurationApp/
 ├── Sources/
-│   ├── VideoDurationApp.swift   # 应用入口
+│   ├── VidurationApp.swift      # 应用入口
 │   ├── ContentView.swift        # SwiftUI 界面
 │   ├── VideoScanner.swift       # AVFoundation 扫描逻辑
 │   ├── AppSettings.swift        # 语言和外观设置
@@ -102,7 +102,7 @@ Requires Xcode.
 ```bash
 cd VideoDurationApp
 xcodegen generate
-open VideoDuration.xcodeproj
+open Viduration.xcodeproj
 ```
 
 ### Project Structure
@@ -110,7 +110,7 @@ open VideoDuration.xcodeproj
 ```
 VideoDurationApp/
 ├── Sources/
-│   ├── VideoDurationApp.swift   # App entry point
+│   ├── VidurationApp.swift      # App entry point
 │   ├── ContentView.swift        # SwiftUI interface
 │   ├── VideoScanner.swift       # AVFoundation scanning logic
 │   ├── AppSettings.swift        # Language and appearance settings

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct VideoDurationApp: App {
+struct VidurationApp: App {
     @StateObject private var settings = AppSettings.shared
 
     var body: some Scene {
